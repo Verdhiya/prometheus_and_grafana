@@ -100,7 +100,8 @@ mv  /home/ubuntu/.ssh/sv_git /root/.ssh/
 chown root:root ~/.ssh/sv_git
 
 chmod 600 ~/.ssh/sv_git
-# Create config adn paste the below code:
+
+# Create config and paste the below code:
 #personal github
 Host personal-github
         HostName github.com
