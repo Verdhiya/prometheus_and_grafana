@@ -1,177 +1,216 @@
-##############################################################################################################################
-# Docker Installation Steps
-##############################################################################################################################
+Docker, GitHub SSH Authentication & Deployment Guide
 
-# Documentation: https://docs.docker.com/engine/install/ubuntu/#installation-methods
+Note: Replace placeholders such as <USERNAME>, <GITHUB_USERNAME>, <EMAIL_ADDRESS>, and <SSH_KEY_NAME> with your own values before executing commands.
+
+⸻
+
+Docker Installation
+
+Documentation
+
+https://docs.docker.com/engine/install/ubuntu/#installation-methods
+
+Install Docker
 
 sudo apt-get update
-
 sudo apt-get install ca-certificates curl gnupg lsb-release
-
 sudo install -m 0755 -d /etc/apt/keyrings
-
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-
 sudo chmod a+r /etc/apt/keyrings/docker.asc
-
-# Add the repository to Apt sources:
-
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
   $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
 sudo apt-get update
-
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
 docker -v
 
-# now an app.py file in Desktop\scripts\Prometheus\Application Instrument\docker_instrument.
+Application Directory
 
-#############################################################################################################################
-# SSH key-based Git authentication
-##############################################################################################################################
-# git bash
+<PROJECT_PATH>/Prometheus/Application Instrument/docker_instrument
+
+⸻
+
+SSH Key-Based Git Authentication
+
+Create SSH Key Directory
 
 mkdir -p ~/.ssh/personal_github_keys
-
 cd ~/.ssh
 
-ssh-keygen -t rsa -b 4096 -C "sv" -f ~/.ssh/personal_github_keys/sv_git
+Generate SSH Key
+
+ssh-keygen -t rsa -b 4096 -C "<GIT_USERNAME>" -f ~/.ssh/personal_github_keys/<SSH_KEY_NAME>
+
+Verify Key
 
 ls -lchrt personal_github_keys/
 
+Start SSH Agent
+
 eval "$(ssh-agent -s)"
 
-ssh-add ~/.ssh/personal_github_keys/sv_git
+Add SSH Key
 
-# Add pub key in github
-cat personal_github_keys/sv_git.pub
+ssh-add ~/.ssh/personal_github_keys/<SSH_KEY_NAME>
 
-#now edit the config file with the below code:
+Display Public Key
+
+cat personal_github_keys/<SSH_KEY_NAME>.pub
+
+Add the displayed public key to GitHub.
+
+⸻
+
+SSH Config
+
+Edit config file:
+
 vim config
 
+Add:
+
 #personal github
-Host personal-github
+Host <GITHUB_HOST_ALIAS>
         HostName github.com
         User git
-        IdentityFile ~/.ssh/sv_git
+        IdentityFile ~/.ssh/<SSH_KEY_NAME>
 #end
 
-# /c/Users/Shubham.Verdhiya/OneDrive - Inside Ideas Group/Desktop/scripts/git
-cd /c/Users/Shubham.Verdhiya/OneDrive\ -\ Inside\ Ideas\ Group/Desktop/scripts/
+⸻
+
+Local Git Setup
+
+Project Path
+
+cd /c/Users/<USERNAME>/path/to/project/
+
+Create Git Directory
 
 mkdir -p git
-
 cd git/
 
+Initialize Repository
+
 git init
-
-git remote add origin git@personal-github:Verdhiya/prometheus_and_grafana.git
-
+git remote add origin git@<GITHUB_HOST_ALIAS>:<GITHUB_USERNAME>/prometheus_and_grafana.git
 git status
-
 git remote -v
-
 git branch -M main
-
 git push -u origin main
-
 git branch --show-current
 
-ssh -T git@personal-github
+Verify GitHub Authentication
 
-git config --global user.name "sv"
+ssh -T git@<GITHUB_HOST_ALIAS>
 
-git config --global user.email "verdhiya13@gmail.com"
+Configure Git
 
+git config --global user.name "<GIT_USERNAME>"
+git config --global user.email "<EMAIL_ADDRESS>"
 git config --list
-
 git config --global --list
 
-##############################################################################################################################
-# On AWS Instance
-##############################################################################################################################
+⸻
 
-#copy the ssh private key from local
-mv  /home/ubuntu/.ssh/sv_git /root/.ssh/
+AWS Instance Setup
 
-chown root:root ~/.ssh/sv_git
+Copy SSH Private Key
 
-chmod 600 ~/.ssh/sv_git
+mv /home/ubuntu/.ssh/<SSH_KEY_NAME> /root/.ssh/
+chown root:root ~/.ssh/<SSH_KEY_NAME>
+chmod 600 ~/.ssh/<SSH_KEY_NAME>
 
-# Create config and paste the below code:
-#personal github
-Host personal-github
-        HostName github.com
-        User git
-        IdentityFile ~/.ssh/sv_git
-#end
+Configure SSH
+
+Edit:
 
 vim ~/.ssh/config
 
+Add:
+
+#personal github
+Host <GITHUB_HOST_ALIAS>
+        HostName github.com
+        User git
+        IdentityFile ~/.ssh/<SSH_KEY_NAME>
+#end
+
+⸻
+
+Git Setup on AWS
+
 mkdir -p git
-
 cd git/
-
 git init
-
-git remote add origin git@personal-github:Verdhiya/prometheus_and_grafana.git
-
+git remote add origin git@<GITHUB_HOST_ALIAS>:<GITHUB_USERNAME>/prometheus_and_grafana.git
 git branch -M main
-
-git config --global user.name "sv"
-
-git config --global user.email "verdhiya13@gmail.com"
-
-ssh -T git@personal-github
-
-git clone -b main git@personal-github:Verdhiya/prometheus_and_grafana.git
-
+git config --global user.name "<GIT_USERNAME>"
+git config --global user.email "<EMAIL_ADDRESS>"
+ssh -T git@<GITHUB_HOST_ALIAS>
+git clone -b main git@<GITHUB_HOST_ALIAS>:<GITHUB_USERNAME>/prometheus_and_grafana.git
 cd prometheus_and_grafana/
 
-#after this we can just run "git pull" in prometheus_and_grafana/ to get the new changes.
+Future Updates
+
+git pull
+
+⸻
+
+Docker Build & Run
+
 cd docker_instrument/
 docker build -t prometheus/custom_app_v1 .
 docker images
 docker run -d --restart always -p 5001:5001 prometheus/custom_app_v1:latest
 
-#Resume or Restart the stopped container/s:
-#Set the restart policy —— docker update --restart always <container_name>
-#Start your exited container —— docker start <container_name>
+⸻
+
+Docker Operations
+
+Running Containers
 
 docker ps
+
+View Logs
+
 docker logs id/name
 
-#delete unused/stopped containers
+Stop & Remove Containers
+
 docker ps -a
 docker stop <container_id_or_name>
 docker rm <container_id_or_name>
 
-#this will remove all the stopped container/s:
+Remove All Stopped Containers
+
 docker container prune
 
-#remove image
+Remove Docker Image
+
 docker rmi <image_id_or_name>
 
-#remove images which are dangling or not in use-
-docker image prune -a 
+Remove Unused Images
 
-#remove/cleans up leftover data storage disks used by containers but now unused.
+docker image prune -a
+
+Remove Unused Volumes
+
 docker volume prune
 
+⸻
 
-##############################################################################################################################
-# uninstall the docker
-##############################################################################################################################
+Restart Existing Containers
+
+docker update --restart always <container_name>
+docker start <container_name>
+
+⸻
+
+Docker Uninstall
 
 sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras
-
 sudo rm -rf /var/lib/docker
-
 sudo rm -rf /var/lib/containerd
-
 sudo rm -rf /var/lib/docker
-
 sudo rm -rf /var/lib/containerd
