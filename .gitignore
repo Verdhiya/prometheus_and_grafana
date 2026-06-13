@@ -1,0 +1,48 @@
+SSH Keys
+
+*.pem
+*.ppk
+id_rsa
+id_ed25519
+
+Environment Variables
+
+.env
+.env.*
+
+Python
+
+pycache/
+*.pyc
+
+VS Code
+
+.vscode/
+
+JetBrains
+
+.idea/
+
+Logs
+
+*.log
+
+OS Files
+
+.DS_Store
+Thumbs.db
+
+Terraform
+
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+Secrets
+
+secrets/
+credentials/
+
+Docker
+
+docker-data/
